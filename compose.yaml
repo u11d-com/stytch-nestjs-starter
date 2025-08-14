@@ -1,4 +1,4 @@
-name: stytch-nestjs-react-starter
+name: stytch-nestjs-starter
 
 services:
   postgres:

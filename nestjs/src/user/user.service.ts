@@ -1,12 +1,6 @@
-import {
-  ConflictException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { StytchService } from '../stytch/stych.service';
-import { CreateUserDto } from './dto';
+import { DeepPartial, Repository } from 'typeorm';
 import { User } from './entities';
 
 @Injectable()
@@ -14,30 +8,18 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly stytchService: StytchService,
   ) {}
 
-  async create(dto: CreateUserDto): Promise<User> {
-    const existingUser = await this.userRepository.findOne({
-      where: { email: dto.email },
-    });
+  async fetchByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { email } });
+  }
 
-    if (existingUser) {
-      throw new ConflictException(
-        `User with email ${dto.email} already exists`,
-      );
-    }
+  async fetchByStytchId(stytchUserId: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { stytchUserId } });
+  }
 
-    const { user_id: stytchUserId } = await this.stytchService.create(dto);
-
-    if (!stytchUserId) {
-      throw new InternalServerErrorException('Failed to create Stytch user');
-    }
-
-    const user = this.userRepository.create({
-      ...dto,
-      stytchUserId,
-    });
+  async create(dto: DeepPartial<User>): Promise<User> {
+    const user = this.userRepository.create(dto);
 
     return await this.userRepository.save(user);
   }

@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 if (process.argv.length < 2) {
-  console.error('Usage: yarn create-admin <email>');
+  console.error('Usage: yarn create-user <email>');
   process.exit(1);
 }
 
@@ -16,9 +16,9 @@ if (!masterKey) {
   process.exit(1);
 }
 
-async function createSuperAdmin() {
+async function createUser() {
   try {
-    const url = `http://localhost:${port}/users`;
+    const url = `http://localhost:${port}/auth/invite`;
 
     const response = await fetch(url, {
       method: 'POST',
@@ -37,11 +37,11 @@ async function createSuperAdmin() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    console.log('Super admin created successfully:');
+    console.log('User created successfully:');
   } catch (error) {
-    console.error('Failed to create super admin:', error);
+    console.error('Failed to create user:', error);
     process.exit(1);
   }
 }
 
-void createSuperAdmin();
+void createUser();
