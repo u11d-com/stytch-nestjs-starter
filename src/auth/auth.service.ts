@@ -85,17 +85,16 @@ export class AuthService {
       throw new InternalServerErrorException('Session not found');
     }
 
-    await Promise.all([
-      this.userService.create({
-        ...dto,
-        stytchUserId,
-      }),
-      this.storeSession({
-        sessionToken,
-        sessionId: session.session_id,
-        stytchUserId: session.user_id,
-      }),
-    ]);
+    await this.userService.create({
+      ...dto,
+      stytchUserId,
+    });
+
+    await this.storeSession({
+      sessionToken,
+      sessionId: session.session_id,
+      stytchUserId: session.user_id,
+    });
 
     return { sessionToken };
   }
