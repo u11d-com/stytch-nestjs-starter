@@ -19,12 +19,7 @@ import {
 import { StytchService } from '../stytch/stych.service';
 import { SessionTokenModel } from './model';
 import { User } from 'src/user/entities';
-
-type StoreSessionArgs = {
-  sessionId: string | undefined;
-  sessionToken: string;
-  stytchUserId: string | undefined;
-};
+import { Session } from 'stytch';
 
 export type CachedSession = {
   userId: string;
@@ -41,11 +36,14 @@ export class AuthService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
-  private async storeSession({
-    sessionId,
-    sessionToken,
-    stytchUserId,
-  }: StoreSessionArgs): Promise<SessionTokenModel> {
+  private async storeSession(
+    sessionToken: string,
+    {
+      session_id: sessionId,
+      user_id: stytchUserId,
+      expires_at: expiresAt,
+    }: Session,
+  ): Promise<SessionTokenModel> {
     if (!(sessionId && sessionToken && stytchUserId)) {
       this.logger.debug(
         `Session data is incomplete: sessionId=${sessionId}, sessionToken=${sessionToken}, stytchUserId=${stytchUserId}`,
@@ -65,7 +63,9 @@ export class AuthService {
       stytchUserId,
     };
 
-    const ttl = this.stytchService.sessionDurationMinutes * 60 * 1000;
+    const ttl = expiresAt
+      ? new Date(expiresAt).getTime() - new Date().getTime()
+      : this.stytchService.sessionDurationMinutes * 60 * 1000;
     await this.cacheManager.set(sessionToken, value, ttl);
 
     return {
@@ -90,11 +90,7 @@ export class AuthService {
       stytchUserId,
     });
 
-    await this.storeSession({
-      sessionToken,
-      sessionId: session.session_id,
-      stytchUserId: session.user_id,
-    });
+    await this.storeSession(sessionToken, session);
 
     return { sessionToken };
   }
@@ -144,25 +140,18 @@ export class AuthService {
       throw new InternalServerErrorException('Session not found');
     }
 
-    return this.storeSession({
-      sessionToken,
-      sessionId: session.session_id,
-      stytchUserId: session.user_id,
-    });
+    return this.storeSession(sessionToken, session);
   }
 
   async refreshSession(dto: RefreshSessionDto): Promise<SessionTokenModel> {
     const { session_token: sessionToken, session } =
       await this.stytchService.refreshSession(dto.sessionToken);
 
-    const [sessionResult] = await Promise.all([
-      this.storeSession({
-        sessionToken,
-        sessionId: session?.session_id,
-        stytchUserId: session?.user_id,
-      }),
-      this.cacheManager.del(dto.sessionToken),
-    ]);
+    if (session.session_id !== dto.sessionToken) {
+      await this.cacheManager.del(dto.sessionToken);
+    }
+
+    const sessionResult = await this.storeSession(sessionToken, session);
 
     return sessionResult;
   }
