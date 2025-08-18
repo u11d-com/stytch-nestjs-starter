@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-if (process.argv.length < 2) {
+if (process.argv.length < 3) {
   console.error('Usage: yarn create-user <email>');
   process.exit(1);
 }
@@ -37,7 +37,9 @@ async function createUser() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    console.log('User created successfully:');
+    console.log('User created successfully!');
+    console.log(`An invitation email has been sent to: ${email}`);
+    console.log('The user will receive a magic link to set their password.');
   } catch (error) {
     console.error('Failed to create user:', error);
     process.exit(1);
