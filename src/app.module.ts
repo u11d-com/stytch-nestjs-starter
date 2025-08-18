@@ -3,6 +3,7 @@ import { AuthModule } from './auth/auth.module';
 import { ResourceModule } from './resource/resource.module';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './user/user.module';
+import { HealthModule } from './health/health.module';
 import { CacheModule } from '@nestjs/cache-manager/dist/cache.module';
 import { createKeyv } from '@keyv/redis';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
@@ -23,6 +24,7 @@ import { ConfigModule } from '@nestjs/config/dist/config.module';
     AuthModule,
     ResourceModule,
     UserModule,
+    HealthModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
