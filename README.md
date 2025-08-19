@@ -1,12 +1,16 @@
 # Stytch NestJS Starter
 
 <p align="center">
-  <a href="https://u11d.com/" target="blank"><img src="https://u11d.com/static/u11d-white-b0b10621fc20805805f23cd6b8c349e0.svg" width="272" alt="Stytch Logo" /></a>
+  <a href="https://u11d.com/" target="blank"><img src="https://u11d.com/static/u11d-white-b0b10621fc20805805f23cd6b8c349e0.svg" width="96" alt="Stytch Logo" /></a>
 </p>
 
 <p align="center">
-  <a href="https://u11d.com/" target="blank"><img src="https://cdn.sanity.io/images/3jwyzebk/production/ec2290dd0d0880bcfcf705aeb056e6209808b0ef-2400x1260.png" width="128" alt="Stytch Logo" /></a>
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo.svg" width="128" alt="Nest Logo" style="margin-left: 16px;" /></a>
+  <a href="https://u11d.com/" target="blank"><img src="https://cdn.sanity.io/images/3jwyzebk/production/ec2290dd0d0880bcfcf705aeb056e6209808b0ef-2400x1260.png" width="96" alt="Stytch Logo" /></a>
+</p>
+
+<p align="center">
+<a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo.svg" width="96" alt="Nest Logo"  /></a>
+
 </p>
 
 <p align="center">A production-ready NestJS backend starter with <a href="https://stytch.com" target="_blank">Stytch</a> authentication integration</p>
