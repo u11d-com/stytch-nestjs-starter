@@ -20,6 +20,7 @@ import { StytchService } from '../stytch/stych.service';
 import { SessionTokenModel } from './model';
 import { User } from 'src/user/entities';
 import { Session } from 'stytch';
+import { createHash } from 'crypto';
 
 export type CachedSession = {
   userId: string;
@@ -30,11 +31,20 @@ export type CachedSession = {
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
+  private readonly hashSalt =
+    process.env.STYTCH_SECRET?.slice(16, 32) || 'salt';
+
   constructor(
     private readonly stytchService: StytchService,
     private readonly userService: UserService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
+
+  hashSessionToken(sessionToken: string): string {
+    return createHash('sha256')
+      .update(`${sessionToken}:${this.hashSalt}`)
+      .digest('hex');
+  }
 
   private async storeSession(
     sessionToken: string,
@@ -66,7 +76,9 @@ export class AuthService {
     const ttl = expiresAt
       ? new Date(expiresAt).getTime() - new Date().getTime()
       : this.stytchService.sessionDurationMinutes * 60 * 1000;
-    await this.cacheManager.set(sessionToken, value, ttl);
+
+    const hashedSessionToken = this.hashSessionToken(sessionToken);
+    await this.cacheManager.set(hashedSessionToken, value, ttl);
 
     return {
       sessionToken,
@@ -148,7 +160,8 @@ export class AuthService {
       await this.stytchService.refreshSession(dto.sessionToken);
 
     if (session.session_id !== dto.sessionToken) {
-      await this.cacheManager.del(dto.sessionToken);
+      const hashedOldToken = this.hashSessionToken(dto.sessionToken);
+      await this.cacheManager.del(hashedOldToken);
     }
 
     const sessionResult = await this.storeSession(sessionToken, session);
@@ -157,13 +170,15 @@ export class AuthService {
   }
 
   async logout({ sessionToken }: LogoutDto): Promise<void> {
+    const hashedSessionToken = this.hashSessionToken(sessionToken);
     await Promise.all([
       this.stytchService.logout(sessionToken),
-      this.cacheManager.del(sessionToken),
+      this.cacheManager.del(hashedSessionToken),
     ]);
   }
 
   async getSession(sessionToken: string): Promise<CachedSession | undefined> {
-    return this.cacheManager.get<CachedSession>(sessionToken);
+    const hashedSessionToken = this.hashSessionToken(sessionToken);
+    return this.cacheManager.get<CachedSession>(hashedSessionToken);
   }
 }

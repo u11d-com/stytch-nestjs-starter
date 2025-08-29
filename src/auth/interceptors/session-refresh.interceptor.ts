@@ -68,12 +68,12 @@ export class SessionRefreshInterceptor implements NestInterceptor {
     }
 
     try {
-      const sessionTtl = await this.cacheManager.ttl(sessionToken);
+      const hashedSessionToken =
+        this.authService.hashSessionToken(sessionToken);
+      const sessionTtl = await this.cacheManager.ttl(hashedSessionToken);
 
       if (!sessionTtl) {
-        return this.logger.debug(
-          `Session token ${sessionToken} not found in cache`,
-        );
+        return this.logger.debug('Session token not found in cache');
       }
 
       const expirationTime = new Date(sessionTtl);
